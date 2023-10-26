@@ -39,6 +39,12 @@ public class OrderService {
                 .bodyToMono(boolean.class)
                 .block();//the block method makes it a synchronous transaction
 
+        if(result){
+            repository.save(order);
+        }
+        else{
+            throw new IllegalArgumentException("product is not in stock please try again later");
+        }
         repository.save(order);
         log.info("Order {} placed successfully", order.getOrderNumber());
 
