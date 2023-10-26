@@ -9,6 +9,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,6 +21,7 @@ import java.util.UUID;
 public class OrderService {
 
     private final OrderRepository repository;
+    private final WebClient webClient;
     public void placeOrder (OrderRequest request){
         Order order = new Order(); //create a new order and set an order number
         order.setOrderNumber(UUID.randomUUID().toString());
@@ -29,6 +31,14 @@ public class OrderService {
                 .map(this ::mapToDto)
                 .toList();
         order.setOrderLineItemsList(orderLineItemsList); //set the order items in that order
+
+        //Check with the inventory service to see if the product is in stock
+       Boolean result = webClient.get()
+                .uri("http://localhost:8082/api/inventory")
+                .retrieve()
+                .bodyToMono(boolean.class)
+                .block();//the block method makes it a synchronous transaction
+
         repository.save(order);
         log.info("Order {} placed successfully", order.getOrderNumber());
 
