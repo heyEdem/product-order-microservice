@@ -1,5 +1,6 @@
 package com.edem.inventoryservice.service;
 
+import com.edem.inventoryservice.dto.InventoryResponse;
 import com.edem.inventoryservice.repository.InventoryRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +15,14 @@ import java.util.List;
 public class InventoryService {
     private final InventoryRepository repository;
     @Transactional
-    public boolean isInStock(List<String> skuCode){
+    public List<InventoryResponse> isInStock(List<String> skuCode){
          log.info("Product {} is in stock", skuCode);
-         return repository.findBySkuCodeIn(skuCode).isPresent();
+         return repository.findBySkuCodeIn(skuCode).stream()
+                 .map(inventory ->
+                     InventoryResponse.builder()
+                             .skuCode(inventory.getSkuCode())
+                             .isInStock(inventory.getQuantity() > 0)
+                             .build()
+                 ).toList().equals();
     }
 }

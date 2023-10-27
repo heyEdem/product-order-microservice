@@ -1,5 +1,6 @@
 package com.edem.inventoryservice.controller;
 
+import com.edem.inventoryservice.dto.InventoryResponse;
 import com.edem.inventoryservice.service.InventoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,7 +15,7 @@ public class InventoryController {
     private final InventoryService service;
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public boolean isInStock(@RequestParam List <String> skuCode){
+    public List<InventoryResponse> isInStock(@RequestParam List <String> skuCode){
         return service.isInStock(skuCode);
     }
 }
