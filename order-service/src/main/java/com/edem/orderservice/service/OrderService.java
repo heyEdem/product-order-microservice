@@ -1,5 +1,6 @@
 package com.edem.orderservice.service;
 
+import com.edem.orderservice.dto.InventoryResponse;
 import com.edem.orderservice.dto.OrderLineItemsDto;
 import com.edem.orderservice.dto.OrderRequest;
 import com.edem.orderservice.model.Order;
@@ -11,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,20 +41,22 @@ public class OrderService {
                                 .map(OrderLineItems::getSkuCode).toList();
 
         //Check with the inventory service to see if the product is in stock
-       Boolean result = webClient.get()
+       InventoryResponse [] inventoryResponseArray = webClient.get()
                 .uri("http://localhost:8082/api/inventory",
                         uriBuilder -> uriBuilder.queryParam("skuCode",skuCodes).build())
                 .retrieve()
-                .bodyToMono(boolean.class)
+                .bodyToMono(InventoryResponse[].class)
                 .block();//the block method makes it a synchronous transaction
+        boolean allProductsInStock  = Arrays.stream(inventoryResponseArray)
+                .allMatch(InventoryResponse::isInStock);
 
-        if(result){
+        if(allProductsInStock){
             repository.save(order);
         }
         else{
             throw new IllegalArgumentException("product is not in stock please try again later");
         }
-        repository.save(order);
+//        repository.save(order);
         log.info("Order {} placed successfully", order.getOrderNumber());
 
     }
@@ -65,4 +69,3 @@ public class OrderService {
         return orderLineItems ;
     }
 }
-// TODO: 10/25/23 Miss Lilly's work
