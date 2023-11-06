@@ -34,15 +34,15 @@ public class OrderService {
                 .toList();
         order.setOrderLineItemsList(orderLineItemsList); //set the order items in that order
 
-        //Collect all skuCodes of items in an orderItemList into a list
-        // to be used by findBySkuCodeIn in the inventory service
+
+        //Collect all skuCodes of items in an orderItemList into a list to be used by findBySkuCodeIn in the inventory service
 
         List<String> skuCodes = order.getOrderLineItemsList().stream()
                                 .map(OrderLineItems::getSkuCode).toList();
 
         //Check with the inventory service to see if the product is in stock
        InventoryResponse [] inventoryResponseArray = webClientBuilder.build().get()
-                .uri("http://localhost:8082/api/inventory",
+                .uri("http://inventory-service/api/inventory",
                         uriBuilder -> uriBuilder.queryParam("skuCode",skuCodes).build())
                 .retrieve()
                 .bodyToMono(InventoryResponse[].class)
